@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.buttonAnalyse = new System.Windows.Forms.Button();
-            this.textBoxAnalyse = new System.Windows.Forms.TextBox();
-            this.textBoxOutput = new System.Windows.Forms.TextBox();
             this.buttonClearAll = new System.Windows.Forms.Button();
+            this.richTextBoxOutput = new System.Windows.Forms.RichTextBox();
+            this.textBoxAnalyse = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
             // buttonAnalyse
@@ -44,23 +44,6 @@
             this.buttonAnalyse.UseVisualStyleBackColor = true;
             this.buttonAnalyse.Click += new System.EventHandler(this.buttonAnalyse_Click);
             // 
-            // textBoxAnalyse
-            // 
-            this.textBoxAnalyse.Location = new System.Drawing.Point(12, 12);
-            this.textBoxAnalyse.Multiline = true;
-            this.textBoxAnalyse.Name = "textBoxAnalyse";
-            this.textBoxAnalyse.Size = new System.Drawing.Size(536, 674);
-            this.textBoxAnalyse.TabIndex = 2;
-            // 
-            // textBoxOutput
-            // 
-            this.textBoxOutput.Location = new System.Drawing.Point(655, 12);
-            this.textBoxOutput.Multiline = true;
-            this.textBoxOutput.Name = "textBoxOutput";
-            this.textBoxOutput.ReadOnly = true;
-            this.textBoxOutput.Size = new System.Drawing.Size(535, 674);
-            this.textBoxOutput.TabIndex = 3;
-            // 
             // buttonClearAll
             // 
             this.buttonClearAll.Location = new System.Drawing.Point(554, 59);
@@ -71,27 +54,43 @@
             this.buttonClearAll.UseVisualStyleBackColor = true;
             this.buttonClearAll.Click += new System.EventHandler(this.buttonClearAll_Click);
             // 
+            // richTextBoxOutput
+            // 
+            this.richTextBoxOutput.Location = new System.Drawing.Point(655, 12);
+            this.richTextBoxOutput.Name = "richTextBoxOutput";
+            this.richTextBoxOutput.ReadOnly = true;
+            this.richTextBoxOutput.Size = new System.Drawing.Size(535, 674);
+            this.richTextBoxOutput.TabIndex = 5;
+            this.richTextBoxOutput.Text = "";
+            // 
+            // textBoxAnalyse
+            // 
+            this.textBoxAnalyse.Location = new System.Drawing.Point(12, 12);
+            this.textBoxAnalyse.Name = "textBoxAnalyse";
+            this.textBoxAnalyse.Size = new System.Drawing.Size(536, 674);
+            this.textBoxAnalyse.TabIndex = 6;
+            this.textBoxAnalyse.Text = "";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1202, 698);
-            this.Controls.Add(this.buttonClearAll);
-            this.Controls.Add(this.textBoxOutput);
             this.Controls.Add(this.textBoxAnalyse);
+            this.Controls.Add(this.richTextBoxOutput);
+            this.Controls.Add(this.buttonClearAll);
             this.Controls.Add(this.buttonAnalyse);
             this.Name = "Form1";
             this.Text = "Form1";
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
         private System.Windows.Forms.Button buttonAnalyse;
-        private System.Windows.Forms.TextBox textBoxAnalyse;
-        private System.Windows.Forms.TextBox textBoxOutput;
         private System.Windows.Forms.Button buttonClearAll;
+        private System.Windows.Forms.RichTextBox richTextBoxOutput;
+        private System.Windows.Forms.RichTextBox textBoxAnalyse;
     }
 }
 

@@ -10,17 +10,18 @@ using System.Windows.Forms;
 
 namespace LANG
 {
+
     public partial class Form1 : Form
     {
         public Form1()
         {
             InitializeComponent();
-            textBoxAnalyse.Text = "module MyProgram;\r\nvar x: int;\r\nbegin\r\n    x = 10;\r\n    if x > 5 {\r\n        x = x - 5;\r\n}\r\n  /* This is my Commentary */  \r\n else {\r\n        x = x + 5;\r\n}\r\nend\r\n";
+            textBoxAnalyse.Text = "module MyProgram;\r\nvar x: int;\r\nbegin\r\n    x = 10;\r\n    if (x > 5) {\r\n        x = x - 5;\r\n}\r\n  /* This is my Commentary */  \r\n else {\r\n        x = x + 5;\r\n}\r\nend\r\n";
         }
 
         private void buttonAnalyse_Click(object sender, EventArgs e)
         {
-            textBoxOutput.Text = "";
+            richTextBoxOutput.Text = "";
             // Получаем текст из текстбокса
             string code = textBoxAnalyse.Text;
 
@@ -36,8 +37,47 @@ namespace LANG
                 List<Token> tokens = lexicalAnalyzer.GetTokens();
                 foreach (Token token in tokens)
                 {
-                    // Обрабатывайте токены, как вам необходимо
-                    textBoxOutput.Text += $"<{token.TokenType}, ( Лексема: '{token.Lexeme}' )>"/*, {token.LineNumber}>"*/ + Environment.NewLine;
+                    // Определение цвета для каждого типа токена
+                    Color color;
+                    switch (token.TokenType)
+                    {
+                        case TokenType.Identifier:
+                            color = Color.Blue;
+                            break;
+                        case TokenType.Keyword:
+                            color = Color.DarkRed;
+                            break;
+                        case TokenType.Operator:
+                            color = Color.Green;
+                            break;
+                        case TokenType.Number:
+                            color = Color.Magenta;
+                            break;
+                        case TokenType.Separator:
+                            color = Color.DarkOrange;
+                            break;
+                        case TokenType.Other:
+                            color = Color.Red;
+                            break;
+                        default:
+                            color = Color.Black;
+                            break;
+                    }
+
+                    richTextBoxOutput.AppendText($"<");
+                    // Добавление текста с указанием цвета в richTextBoxOutput
+                    richTextBoxOutput.SelectionColor = color;
+                    richTextBoxOutput.AppendText($"{token.TokenType}");
+                    richTextBoxOutput.SelectionColor = Color.Black;
+                    richTextBoxOutput.AppendText($", ( Лексема: '");
+                    // Добавление текста с указанием цвета в richTextBoxOutput
+                    richTextBoxOutput.SelectionColor = color;
+                    richTextBoxOutput.AppendText($"{token.Lexeme}");
+                    richTextBoxOutput.SelectionColor = Color.Black;
+                    richTextBoxOutput.AppendText($"' )>{Environment.NewLine}");
+
+
+                    //richTextBoxOutput.AppendText($"<{token.TokenType}, ( Лексема: '{token.Lexeme}' )>{Environment.NewLine}");
                 }
             }
         }
@@ -45,7 +85,7 @@ namespace LANG
 
         private void buttonClearAll_Click(object sender, EventArgs e)
         {
-            textBoxOutput.Text = "";
+            richTextBoxOutput.Text = "";
             textBoxAnalyse.Text = "";
         }
     }

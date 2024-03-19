@@ -32,9 +32,9 @@ namespace LANG
             // Добавьте остальные зарезервированные слова
         };
         private static readonly string[] Operators = { "+", "-", "*", "/", "=", "<", ">", "<=", ">=", "==", "!=" };
-        private static readonly char[] Separators = { '(', ')', '{', '}', ';', ',' };
+        private static readonly char[] Separators = { '(', ')', '{', '}', ';', ',' , ':'};
         private static readonly string[] Booleans = { "true", "false" };
-        private static readonly string[] ReservedWords = { "true", "false", "+", "-", "*", "/", "=", "<", ">", "<=", ">=", "==", "!=", "(", ")", "{", "}", "[", "]", ";", ",", ".", "module", "var", "int", "bool", "float", "arr", "begin", "end", "while", "repeat", "if", "else"};
+        private static readonly string[] ReservedWords = { "true", "false", "+", "-", "*", "/", "=", "<", ">", "<=", ">=", "==", "!=", "(", ")", "{", "}", "[", "]", ";", ":", ",", ".", "module", "var", "int", "bool", "float", "arr", "begin", "end", "while", "repeat", "if", "else"};
 
         private List<Error> Errors = new List<Error>();
         private char Buffer = '\0';
@@ -117,6 +117,10 @@ namespace LANG
 
         private void ProcessNextToken(List<Token> tokens)
         {
+            string lexeme;
+            TokenType tokenType;
+            bool Checker = false;
+            bool SaveChecker = false;
             char currentChar;
             if (Buffer != '\0')
             {
@@ -155,26 +159,80 @@ namespace LANG
             // Считывание букв, цифр и других символов для формирования лексемы
             while (char.IsLetterOrDigit(currentChar) || ReservedWords.Contains(currentChar.ToString()))
             {
+                if (currentChar == '\n')
+                {
+                    lineNumber++;
+                }
                 IsCommentary(ref currentChar);
                 if (Separators.Contains(currentChar))
                 {
-                    break;
+                    if(Checker)
+                    {
+                        Checker = false;
+                        if (!string.IsNullOrEmpty(currentLexeme))
+                        {
+                            lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
+                            tokenType = GetTokenType(lexeme);
+                            tokens.Add(new Token(tokenType, lexeme, lineNumber));
+                            currentLexeme = "";
+                        }
+                        SaveChecker = true;
+                    }
+                    currentLexeme += currentChar;
+                    if (Buffer != '\0')
+                    {
+                        currentChar = Buffer;
+                        Buffer = '\0';
+                    }
+                    else
+                    {
+                        currentChar = ReadNextChar();
+                    }
+                    if (!string.IsNullOrEmpty(currentLexeme))
+                    {
+                        lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
+                        tokenType = GetTokenType(lexeme);
+                        tokens.Add(new Token(tokenType, lexeme, lineNumber));
+                        currentLexeme = "";
+                    }
+                    if (currentChar == '\n')
+                    {
+                        currentChar = ReadNextChar();
+                    }
                 }
-                currentLexeme += currentChar;
-                if (Buffer != '\0')
+                if(char.IsLetterOrDigit(currentChar) || ReservedWords.Contains(currentChar.ToString()))
                 {
-                    currentChar = Buffer;
-                    Buffer = '\0';
-                }
-                else
-                {
-                    currentChar = ReadNextChar();
+                    if (currentChar == '\n')
+                    {
+                        lineNumber++;
+                    }
+                    currentLexeme += currentChar;
+                    if (Buffer != '\0')
+                    {
+                        currentChar = Buffer;
+                        Buffer = '\0';
+                    }
+                    else
+                    {
+                        currentChar = ReadNextChar();
+                    }
+                    Checker = true;
+                    SaveChecker = false;
                 }
             }
 
-
-            string lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
-
+            if(!SaveChecker)
+            {
+                if(!string.IsNullOrEmpty(currentLexeme))
+                {
+                    lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
+                    tokenType = GetTokenType(lexeme);
+                    tokens.Add(new Token(tokenType, lexeme, lineNumber));
+                    currentLexeme = "";
+                }
+            }           
+            
+            lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
             if (string.IsNullOrEmpty(lexeme))
             {
                 currentLexeme = "";
@@ -183,32 +241,6 @@ namespace LANG
                     ProcessNextToken(tokens);
                 }
                 return;
-            }
-            TokenType tokenType = GetTokenType(lexeme);
-            tokens.Add(new Token(tokenType, lexeme, lineNumber));
-            currentLexeme = "";
-            if (Separators.Contains(currentChar))
-            {
-                IsCommentary(ref currentChar);
-                currentLexeme += currentChar;
-                if (Buffer != '\0')
-                {
-                    currentChar = Buffer;
-                    Buffer = '\0';
-                }
-                else
-                {
-                    currentChar = ReadNextChar();
-                }
-                lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
-                tokenType = GetTokenType(lexeme);
-                tokens.Add(new Token(tokenType, lexeme, lineNumber));
-                currentLexeme = "";
-            }
-
-            if (currentChar != '\0')
-            {
-                ProcessNextToken(tokens);
             }
         }
 
