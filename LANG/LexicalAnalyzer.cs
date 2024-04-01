@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using static LANG.LexicalAnalyzer;
 
 namespace LANG
@@ -35,7 +36,7 @@ namespace LANG
         private static readonly char[] Separators = { '(', ')', '{', '}', ';', ',' , ':'};
         private static readonly string[] Booleans = { "true", "false" };
         private static readonly string[] ReservedWords = { "true", "false", "+", "-", "*", "/", "=", "<", ">", "<=", ">=", "==", "!=", "(", ")", "{", "}", "[", "]", ";", ":", ",", ".", "module", "var", "int", "bool", "float", "arr", "begin", "end", "while", "repeat", "if", "else"};
-
+        //private static readonly string[][] Tokens = { { } };
         private List<Error> Errors = new List<Error>();
         private char Buffer = '\0';
 
@@ -60,34 +61,167 @@ namespace LANG
                 return TokenType.Other;
             }
 
-            if (reservedWords.ContainsKey(lexeme))
+            switch (lexeme)
             {
-                return TokenType.Keyword;
-            }
-            else if (Operators.Any(lexeme.Contains))
-            {
-                return TokenType.Operator;
-            }
-            else if (Separators.Contains(lexeme[0]))
-            {
-                return TokenType.Separator;
-            }
-            else if (IsNumber(lexeme))
-            {
-                return TokenType.Number;
-            }
-            else
-            {
-                return TokenType.Identifier;
+                case "const":
+                    return TokenType.tConst;
+                case "else":
+                    return TokenType.tElse;
+                case "end":
+                    return TokenType.tEnd;
+                case "functional":
+                    return TokenType.tFunc;
+                case "repeat":
+                    return TokenType.tRepeat;
+                case "if":
+                    return TokenType.tIf;
+                case "module":
+                    return TokenType.tModule;
+                case "begin":
+                    return TokenType.tBegin;
+                case "arr":
+                    return TokenType.tArray;
+                case "while":
+                    return TokenType.tFunc;
+                case "var":
+                    return TokenType.tVar;
+                case "int":
+                    return TokenType.tInt;
+                case "float":
+                    return TokenType.tFloat;
+                case "bool":
+                    return TokenType.tBool;
+                case "true":
+                    return TokenType.tTrue;
+                case "false":
+                    return TokenType.tFalse;
+                case ";":
+                    return TokenType.tz;
+                case ",":
+                    return TokenType.z;
+                case "(":
+                    return TokenType.sc1;
+                case ")":
+                    return TokenType.sc2;
+                case ":":
+                    return TokenType.dt;
+                case "=":
+                    return TokenType.ravno;
+                case "[":
+                    return TokenType.kvsc1;
+                case "]":
+                    return TokenType.kvsc2;
+                case "{":
+                    return TokenType.figsc1;
+                case "}":
+                    return TokenType.figsc2;
+                case ">":
+                    return TokenType.more;
+                case "==":
+                    return TokenType.eq;
+                case "<":
+                    return TokenType.less;
+                case ">=":
+                    return TokenType.moreOrEq;
+                case "<=":
+                    return TokenType.lessOrEq;
+                case "!=":
+                    return TokenType.noEq;
+                case "-":
+                    return TokenType.minus;
+                case "+":
+                    return TokenType.plus;
+                case "/":
+                    return TokenType.div;
+                case "*":
+                    return TokenType.mul;
+                default:
+                    // Проверяем, является ли lexeme идентификатором
+                    if (IsIdentifier(lexeme))
+                    {
+                        return TokenType.id;
+                    }
+                    // Проверяем, является ли lexeme числом
+                    else if (IsNumber(lexeme) || IsExponentialNumber(lexeme))
+                    {
+                        return TokenType.ct;
+                    }
+                    else
+                    {
+                        return TokenType.Other;
+                    }
             }
         }
+ 
 
+        //tConst,
+        //tElse,
+        //tEnd,
+        //tFunc,
+        //tRepeat,
+        //tIf,
+        //tModule,
+        //tBegin,
+        //tArray,
+        //tWhile,
+        //tVar,
+        //tz,
+        //z,
+        //sc1,
+        //sc2,
+        //dt,
+        //ravno,
+        //kvsc1,
+        //kvsk2,
+        //id,
+        //ct,
+        //Other
 
         private bool IsNumber(string lexeme)
         {
             // Метод проверяет, является ли лексема числом
             return int.TryParse(lexeme, out _) || float.TryParse(lexeme, out _);
         }
+        static bool IsExponentialNumber(string input)
+        {
+            string pattern = @"^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$";
+            return Regex.IsMatch(input, pattern);
+        }
+        private bool IsBoolean(string lexeme)
+        {
+            bool result;
+            return bool.TryParse(lexeme, out result);
+        }
+        private bool IsInteger(string lexeme)
+        {
+            int result;
+            return int.TryParse(lexeme, out result);
+        }
+        private bool IsFloat(string lexeme)
+        {
+            float result;
+            return float.TryParse(lexeme, out result);
+        }
+        private bool IsIdentifier(string lexeme)
+        {
+            // Проверяем, начинается ли строка с буквы
+            if (!char.IsLetter(lexeme[0]))
+            {
+                return false;
+            }
+
+            // Проверяем оставшиеся символы на буквы или цифры
+            for (int i = 1; i < lexeme.Length; i++)
+            {
+                if (!char.IsLetterOrDigit(lexeme[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private void IsCommentary(ref char currentChar)
         {
             if (currentChar == '/')
@@ -200,6 +334,7 @@ namespace LANG
                         currentChar = ReadNextChar();
                     }
                 }
+                else 
                 if(char.IsLetterOrDigit(currentChar) || ReservedWords.Contains(currentChar.ToString()))
                 {
                     if (currentChar == '\n')
@@ -219,9 +354,18 @@ namespace LANG
                     Checker = true;
                     SaveChecker = false;
                 }
+                else
+                    if (currentChar!='\0' && currentChar!='\n'&& !char.IsWhiteSpace(currentChar))
+                {
+                    tokens.Add(new Token(TokenType.Other, ""+currentChar, lineNumber));
+                }
+            }
+            if (currentChar != '\0' && currentChar != '\n' && !char.IsWhiteSpace(currentChar))
+            {
+                tokens.Add(new Token(TokenType.Other, "" + currentChar, lineNumber));
             }
 
-            if(!SaveChecker)
+            if (!SaveChecker)
             {
                 if(!string.IsNullOrEmpty(currentLexeme))
                 {
@@ -281,11 +425,44 @@ namespace LANG
 
     public enum TokenType
     {
-        Identifier,
-        Keyword,
-        Operator,
-        Number,
-        Separator,
+        tConst,
+        tElse,
+        tEnd,
+        tFunc,
+        tRepeat,
+        tIf,
+        tModule,
+        tBegin,
+        tArray,
+        tWhile,
+        tVar,
+        tInt,
+        tFloat,
+        tBool,
+        tz,
+        z,
+        sc1,
+        sc2,
+        dt,
+        ravno,
+        kvsc1,
+        kvsc2,
+        figsc1,
+        figsc2,
+        more,
+        eq,
+        less,
+        moreOrEq,
+        lessOrEq,
+        noEq,
+        minus,
+        plus,
+        div,
+        mul,
+        id,
+        ct,
+        tTrue,
+        tFalse,
         Other
     }
     public class Token

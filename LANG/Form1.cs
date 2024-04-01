@@ -37,47 +37,7 @@ namespace LANG
                 List<Token> tokens = lexicalAnalyzer.GetTokens();
                 foreach (Token token in tokens)
                 {
-                    // Определение цвета для каждого типа токена
-                    Color color;
-                    switch (token.TokenType)
-                    {
-                        case TokenType.Identifier:
-                            color = Color.Blue;
-                            break;
-                        case TokenType.Keyword:
-                            color = Color.DarkRed;
-                            break;
-                        case TokenType.Operator:
-                            color = Color.Green;
-                            break;
-                        case TokenType.Number:
-                            color = Color.Magenta;
-                            break;
-                        case TokenType.Separator:
-                            color = Color.DarkOrange;
-                            break;
-                        case TokenType.Other:
-                            color = Color.Red;
-                            break;
-                        default:
-                            color = Color.Black;
-                            break;
-                    }
-
-                    richTextBoxOutput.AppendText($"<");
-                    // Добавление текста с указанием цвета в richTextBoxOutput
-                    richTextBoxOutput.SelectionColor = color;
-                    richTextBoxOutput.AppendText($"{token.TokenType}");
-                    richTextBoxOutput.SelectionColor = Color.Black;
-                    richTextBoxOutput.AppendText($", ( Лексема: '");
-                    // Добавление текста с указанием цвета в richTextBoxOutput
-                    richTextBoxOutput.SelectionColor = color;
-                    richTextBoxOutput.AppendText($"{token.Lexeme}");
-                    richTextBoxOutput.SelectionColor = Color.Black;
-                    richTextBoxOutput.AppendText($"' )>{Environment.NewLine}");
-
-
-                    //richTextBoxOutput.AppendText($"<{token.TokenType}, ( Лексема: '{token.Lexeme}' )>{Environment.NewLine}");
+                    richTextBoxOutput.AppendText($"<{token.TokenType}, ( Лексема: '{token.Lexeme}' )>{Environment.NewLine}");
                 }
             }
         }
@@ -87,6 +47,21 @@ namespace LANG
         {
             richTextBoxOutput.Text = "";
             textBoxAnalyse.Text = "";
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            textBoxAnalyse.Text = "";
+        }
+
+        private void RightFeel_Click(object sender, EventArgs e)
+        {
+            richTextBoxOutput.Text = "";
         }
     }
 }
