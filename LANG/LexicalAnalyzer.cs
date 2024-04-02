@@ -32,10 +32,10 @@ namespace LANG
             { "else", "ELSE" },
             // Добавьте остальные зарезервированные слова
         };
-        private static readonly string[] Operators = { "+", "-", "*", "/", "=", "<", ">", "<=", ">=", "==", "!=" };
-        private static readonly char[] Separators = { '(', ')', '{', '}', ';', ',' , ':'};
+        private static readonly string[] Operators = { "+", "-", "*", "/", "=", "<", ">", "<=", ">=", "==", "!=", "||", "&&", "!" };
+        private static readonly char[] Separators = { '(', ')', '{', '}', '[', ']', ';', ',' , ':'};
         private static readonly string[] Booleans = { "true", "false" };
-        private static readonly string[] ReservedWords = { "true", "false", "+", "-", "*", "/", "=", "<", ">", "<=", ">=", "==", "!=", "(", ")", "{", "}", "[", "]", ";", ":", ",", ".", "module", "var", "int", "bool", "float", "arr", "begin", "end", "while", "repeat", "if", "else"};
+        private static readonly string[] ReservedWords = { "true", "false", "+", "-", "*", "/", "=", "|", "&", "<", ">", "<=", ">=", "==", "!=", "||", "&&", "!", "(", ")", "{", "}", "[", "]", ";", ":", ",", ".", "module", "var", "int", "bool", "float", "arr", "begin", "end", "while", "repeat", "if", "else"};
         //private static readonly string[][] Tokens = { { } };
         private List<Error> Errors = new List<Error>();
         private char Buffer = '\0';
@@ -73,6 +73,8 @@ namespace LANG
                     return TokenType.tFunc;
                 case "repeat":
                     return TokenType.tRepeat;
+                case "do":
+                    return TokenType.tDo;
                 case "if":
                     return TokenType.tIf;
                 case "module":
@@ -81,8 +83,6 @@ namespace LANG
                     return TokenType.tBegin;
                 case "arr":
                     return TokenType.tArray;
-                case "while":
-                    return TokenType.tFunc;
                 case "var":
                     return TokenType.tVar;
                 case "int":
@@ -119,6 +119,12 @@ namespace LANG
                     return TokenType.more;
                 case "==":
                     return TokenType.eq;
+                case "||":
+                    return TokenType.Or;
+                case "&&":
+                    return TokenType.And;
+                case "!":
+                    return TokenType.Not;
                 case "<":
                     return TokenType.less;
                 case ">=":
@@ -227,16 +233,25 @@ namespace LANG
             if (currentChar == '/')
             {
                 Buffer = currentChar;
-                currentChar = ReadNextChar();
+                currentChar = ReadNextChar(); if (currentChar == '\n')
+                {
+                    lineNumber++;
+                }
                 if (currentChar == '*')
                 {
                     Buffer = '\0';
                     while (!reader.EndOfStream)
                     {
-                        currentChar = ReadNextChar();
+                        currentChar = ReadNextChar(); if (currentChar == '\n')
+                        {
+                            lineNumber++;
+                        }
                         if (currentChar == '*')
                         {
-                            currentChar = ReadNextChar();
+                            currentChar = ReadNextChar(); if (currentChar == '\n')
+                            {
+                                lineNumber++;
+                            }
                             if (currentChar == '/')
                             {
                                 currentChar = ReadNextChar();
@@ -331,6 +346,10 @@ namespace LANG
                     }
                     if (currentChar == '\n')
                     {
+                        if (currentChar == '\n')
+                        {
+                            lineNumber++;
+                        }
                         currentChar = ReadNextChar();
                     }
                 }
@@ -355,7 +374,7 @@ namespace LANG
                     SaveChecker = false;
                 }
                 else
-                    if (currentChar!='\0' && currentChar!='\n'&& !char.IsWhiteSpace(currentChar))
+                    if (currentChar!='\0' && currentChar!='\n' && !char.IsWhiteSpace(currentChar))
                 {
                     tokens.Add(new Token(TokenType.Other, ""+currentChar, lineNumber));
                 }
@@ -364,7 +383,10 @@ namespace LANG
             {
                 tokens.Add(new Token(TokenType.Other, "" + currentChar, lineNumber));
             }
-
+            if (currentChar == '\n')
+            {
+                lineNumber++;
+            }
             if (!SaveChecker)
             {
                 if(!string.IsNullOrEmpty(currentLexeme))
@@ -429,16 +451,20 @@ namespace LANG
         tElse,
         tEnd,
         tFunc,
-        tRepeat,
         tIf,
         tModule,
         tBegin,
         tArray,
-        tWhile,
+        tRepeat,
+        tDo,
         tVar,
         tInt,
         tFloat,
         tBool,
+        And,
+        Or,
+        Not,
+        NotRavno,
         tz,
         z,
         sc1,
