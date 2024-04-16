@@ -33,7 +33,7 @@ namespace LANG
             // Добавьте остальные зарезервированные слова
         };
         private static readonly string[] Operators = { "+", "-", "*", "/", "=", "<", ">", "<=", ">=", "==", "!=", "||", "&&", "!" };
-        private static readonly char[] Separators = { '(', ')', '{', '}', '[', ']', ';', ',' , ':'};
+        private static readonly char[] Separators = { '(', ')', '{', '}', '[', ']', ';', ',' , ':', '-', '+', '/', '*'};
         private static readonly string[] Booleans = { "true", "false" };
         private static readonly string[] ReservedWords = { "true", "false", "+", "-", "*", "/", "=", "|", "&", "<", ">", "<=", ">=", "==", "!=", "||", "&&", "!", "(", ")", "{", "}", "[", "]", ";", ":", ",", ".", "module", "var", "int", "bool", "float", "arr", "begin", "end", "while", "repeat", "if", "else"};
         //private static readonly string[][] Tokens = { { } };
