@@ -14,6 +14,8 @@ namespace LANG
         private StreamReader reader;
         private string currentLexeme;
         private int lineNumber;
+        private int NumberInL;
+        private int NumberId;
 
         // Таблица зарезервированных слов
         private Dictionary<string, string> reservedWords = new Dictionary<string, string>
@@ -32,6 +34,9 @@ namespace LANG
             { "else", "ELSE" },
             // Добавьте остальные зарезервированные слова
         };
+
+       
+
         private static readonly string[] Operators = { "+", "-", "*", "/", "=", "<", ">", "<=", ">=", "==", "!=", "||", "&&", "!" };
         private static readonly char[] Separators = { '(', ')', '{', '}', '[', ']', ';', ',' , ':', '-', '+', '/', '*'};
         private static readonly string[] Booleans = { "true", "false" };
@@ -39,18 +44,29 @@ namespace LANG
         //private static readonly string[][] Tokens = { { } };
         private List<Error> Errors = new List<Error>();
         private char Buffer = '\0';
+        private Dictionary<string, int> identifierIndexTable = new Dictionary<string, int>();
 
         public LexicalAnalyzer(string code)
         {
             reader = new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(code)));
+            // Создание таблицы индексов идентификаторов
+            NumberId = 0;
             currentLexeme = "";
             lineNumber = 1;
+            NumberInL = 0;
         }
 
         private char ReadNextChar()
         {
             int nextChar = reader.Read();
-            Console.Write((char)nextChar);
+            if ((char)nextChar == '\n')
+            {
+                NumberInL = 0;
+            }
+            else
+            {
+                NumberInL++;
+            }            Console.Write((char)nextChar);
             return (nextChar == -1) ? '\0' : (char)nextChar;
         }
 
@@ -233,8 +249,11 @@ namespace LANG
             if (currentChar == '/')
             {
                 Buffer = currentChar;
-                currentChar = ReadNextChar(); if (currentChar == '\n')
+                currentChar = ReadNextChar(); 
+                
+                if (currentChar == '\n')
                 {
+                    NumberInL = 0;
                     lineNumber++;
                 }
                 if (currentChar == '*')
@@ -242,14 +261,18 @@ namespace LANG
                     Buffer = '\0';
                     while (!reader.EndOfStream)
                     {
-                        currentChar = ReadNextChar(); if (currentChar == '\n')
+                        currentChar = ReadNextChar(); 
+                        if (currentChar == '\n')
                         {
+                            NumberInL = 0;
                             lineNumber++;
                         }
                         if (currentChar == '*')
                         {
-                            currentChar = ReadNextChar(); if (currentChar == '\n')
+                            currentChar = ReadNextChar(); 
+                            if (currentChar == '\n')
                             {
+                                NumberInL = 0;
                                 lineNumber++;
                             }
                             if (currentChar == '/')
@@ -274,6 +297,7 @@ namespace LANG
             if (Buffer != '\0')
             {
                 currentChar = Buffer;
+                NumberInL--;
                 Buffer = '\0';
             }
             else
@@ -285,11 +309,13 @@ namespace LANG
             {
                 if (currentChar == '\n')
                 {
+                    NumberInL = 0;
                     lineNumber++;
                 }
                 if (Buffer != '\0')
                 {
                     currentChar = Buffer;
+                    NumberInL--;
                     Buffer = '\0';
                 }
                 else
@@ -310,6 +336,7 @@ namespace LANG
             {
                 if (currentChar == '\n')
                 {
+                    NumberInL = 0;
                     lineNumber++;
                 }
                 IsCommentary(ref currentChar);
@@ -322,7 +349,26 @@ namespace LANG
                         {
                             lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
                             tokenType = GetTokenType(lexeme);
-                            tokens.Add(new Token(tokenType, lexeme, lineNumber));
+                            int ident = -1;
+                            if(tokenType == TokenType.id)
+                            {
+                                if (tokenType == TokenType.id)
+                                {
+                                    // Проверяем, есть ли идентификатор уже в таблице
+                                    if (identifierIndexTable.ContainsKey(lexeme))
+                                    {
+                                        // Если есть, берем его индекс
+                                        ident = identifierIndexTable[lexeme];
+                                    }
+                                    else
+                                    {
+                                        // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
+                                        ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
+                                        identifierIndexTable.Add(lexeme, ident);
+                                    }
+                                }
+                            }
+                            tokens.Add(new Token(tokenType, lexeme, lineNumber, NumberInL - lexeme.Length, ident));
                             currentLexeme = "";
                         }
                         SaveChecker = true;
@@ -331,6 +377,7 @@ namespace LANG
                     if (Buffer != '\0')
                     {
                         currentChar = Buffer;
+                        NumberInL--;
                         Buffer = '\0';
                     }
                     else
@@ -341,13 +388,33 @@ namespace LANG
                     {
                         lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
                         tokenType = GetTokenType(lexeme);
-                        tokens.Add(new Token(tokenType, lexeme, lineNumber));
+                        int ident = -1;
+                        if (tokenType == TokenType.id)
+                        {
+                            if (tokenType == TokenType.id)
+                            {
+                                // Проверяем, есть ли идентификатор уже в таблице
+                                if (identifierIndexTable.ContainsKey(lexeme))
+                                {
+                                    // Если есть, берем его индекс
+                                    ident = identifierIndexTable[lexeme];
+                                }
+                                else
+                                {
+                                    // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
+                                    ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
+                                    identifierIndexTable.Add(lexeme, ident);
+                                }
+                            }
+                        }
+                        tokens.Add(new Token(tokenType, lexeme, lineNumber, NumberInL - lexeme.Length, ident));
                         currentLexeme = "";
                     }
                     if (currentChar == '\n')
                     {
                         if (currentChar == '\n')
                         {
+                            NumberInL = 0;
                             lineNumber++;
                         }
                         currentChar = ReadNextChar();
@@ -358,12 +425,14 @@ namespace LANG
                 {
                     if (currentChar == '\n')
                     {
+                        NumberInL = 0;
                         lineNumber++;
                     }
                     currentLexeme += currentChar;
                     if (Buffer != '\0')
                     {
                         currentChar = Buffer;
+                        NumberInL--;
                         Buffer = '\0';
                     }
                     else
@@ -385,6 +454,7 @@ namespace LANG
             }
             if (currentChar == '\n')
             {
+                NumberInL = 0;
                 lineNumber++;
             }
             if (!SaveChecker)
@@ -393,7 +463,26 @@ namespace LANG
                 {
                     lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
                     tokenType = GetTokenType(lexeme);
-                    tokens.Add(new Token(tokenType, lexeme, lineNumber));
+                    int ident = -1;
+                    if (tokenType == TokenType.id)
+                    {
+                        if (tokenType == TokenType.id)
+                        {
+                            // Проверяем, есть ли идентификатор уже в таблице
+                            if (identifierIndexTable.ContainsKey(lexeme))
+                            {
+                                // Если есть, берем его индекс
+                                ident = identifierIndexTable[lexeme];
+                            }
+                            else
+                            {
+                                // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
+                                ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
+                                identifierIndexTable.Add(lexeme, ident);
+                            }
+                        }
+                    }
+                    tokens.Add(new Token(tokenType, lexeme, lineNumber, NumberInL - lexeme.Length, ident));
                     currentLexeme = "";
                 }
             }           
@@ -496,6 +585,9 @@ namespace LANG
         public TokenType TokenType { get; set; }
         public string Lexeme { get; set; }
         public int LineNumber { get; set; }
+        public int NumberInLine { get; set; }
+        public int ID { get; set; }
+
 
         public Token(TokenType tokenType, string lexeme, int lineNumber)
         {
@@ -503,7 +595,36 @@ namespace LANG
             Lexeme = lexeme;
             LineNumber = lineNumber;
         }
+        public Token(TokenType tokenType, string lexeme, int lineNumber, int Number)
+        {
+            TokenType = tokenType;
+            Lexeme = lexeme;
+            LineNumber = lineNumber;
+            NumberInLine = Number;
+        }
+        public Token(TokenType tokenType, string lexeme, int lineNumber, int Number, int id)
+        {
+            TokenType = tokenType;
+            Lexeme = lexeme;
+            LineNumber = lineNumber;
+            NumberInLine = Number;
+            ID = id;
+        }
     }
 
+    public class IdentifierInfo
+    {
+        public string Lex { get; set; }   // Лексема идентификатора
+        public string Cat { get; set; }   // Категория идентификатора
+        public string Tip { get; set; }   // Тип идентификатора
+        public Dictionary<string, object> Other { get; set; } // Дополнительные поля
 
+        public IdentifierInfo(string lex, string cat, string tip, Dictionary<string, object> other)
+        {
+            Lex = lex;
+            Cat = cat;
+            Tip = tip;
+            Other = other;
+        }
+    }
 }

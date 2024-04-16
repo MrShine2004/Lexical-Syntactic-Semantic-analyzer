@@ -39,7 +39,7 @@ namespace LANG
                 {
                     if (token.TokenType == TokenType.id)
                     {
-                        richTextBoxOutput.AppendText($"<{token.TokenType}, {token.LineNumber}>, ( Лексема: '{token.Lexeme}' ){Environment.NewLine}");
+                        richTextBoxOutput.AppendText($"<{token.TokenType}, {token.ID}>, ( Лексема: '{token.Lexeme}' ){Environment.NewLine}");
                     }
                     else
                     {
