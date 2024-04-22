@@ -35,12 +35,12 @@ namespace LANG
             // Добавьте остальные зарезервированные слова
         };
 
-       
+
 
         private static readonly string[] Operators = { "+", "-", "*", "/", "=", "<", ">", "<=", ">=", "==", "!=", "||", "&&", "!" };
-        private static readonly char[] Separators = { '(', ')', '{', '}', '[', ']', ';', ',' , ':', '-', '+', '/', '*'};
+        private static readonly char[] Separators = { '(', ')', '{', '}', '[', ']', ';', ',', ':', '-', '+', '/', '*' };
         private static readonly string[] Booleans = { "true", "false" };
-        private static readonly string[] ReservedWords = { "true", "false", "+", "-", "*", "/", "=", "|", "&", "<", ">", "<=", ">=", "==", "!=", "||", "&&", "!", "(", ")", "{", "}", "[", "]", ";", ":", ",", ".", "module", "var", "int", "bool", "float", "arr", "begin", "end", "while", "repeat", "if", "else"};
+        private static readonly string[] ReservedWords = { "true", "false", "+", "-", "*", "/", "=", "|", "&", "<", ">", "<=", ">=", "==", "!=", "||", "&&", "!", "(", ")", "{", "}", "[", "]", ";", ":", ",", ".", "module", "var", "int", "bool", "float", "arr", "begin", "end", "while", "repeat", "if", "else" };
         //private static readonly string[][] Tokens = { { } };
         private List<Error> Errors = new List<Error>();
         private char Buffer = '\0';
@@ -58,16 +58,27 @@ namespace LANG
 
         private char ReadNextChar()
         {
-            int nextChar = reader.Read();
-            if ((char)nextChar == '\n')
+            if (Buffer != '\0')
             {
-                NumberInL = 0;
+                char currentChar = Buffer;
+                NumberInL--;
+                Buffer = '\0';
+                return currentChar;
             }
             else
             {
-                NumberInL++;
-            }            Console.Write((char)nextChar);
-            return (nextChar == -1) ? '\0' : (char)nextChar;
+                int nextChar = reader.Read();
+                if ((char)nextChar == '\n')
+                {
+                    NumberInL = 0;
+                }
+                else
+                {
+                    NumberInL++;
+                }
+                Console.Write((char)nextChar);
+                return (nextChar == -1) ? '\0' : (char)nextChar;
+            }
         }
 
         private TokenType GetTokenType(string lexeme)
@@ -174,7 +185,7 @@ namespace LANG
                     }
             }
         }
- 
+
 
         //tConst,
         //tElse,
@@ -249,8 +260,8 @@ namespace LANG
             if (currentChar == '/')
             {
                 Buffer = currentChar;
-                currentChar = ReadNextChar(); 
-                
+                currentChar = ReadNextChar();
+
                 if (currentChar == '\n')
                 {
                     NumberInL = 0;
@@ -261,7 +272,7 @@ namespace LANG
                     Buffer = '\0';
                     while (!reader.EndOfStream)
                     {
-                        currentChar = ReadNextChar(); 
+                        currentChar = ReadNextChar();
                         if (currentChar == '\n')
                         {
                             NumberInL = 0;
@@ -269,7 +280,7 @@ namespace LANG
                         }
                         if (currentChar == '*')
                         {
-                            currentChar = ReadNextChar(); 
+                            currentChar = ReadNextChar();
                             if (currentChar == '\n')
                             {
                                 NumberInL = 0;
@@ -294,16 +305,7 @@ namespace LANG
             bool Checker = false;
             bool SaveChecker = false;
             char currentChar;
-            if (Buffer != '\0')
-            {
-                currentChar = Buffer;
-                NumberInL--;
-                Buffer = '\0';
-            }
-            else
-            {
-                currentChar = ReadNextChar();
-            }
+            currentChar = ReadNextChar();
 
             while (char.IsWhiteSpace(currentChar))
             {
@@ -312,16 +314,7 @@ namespace LANG
                     NumberInL = 0;
                     lineNumber++;
                 }
-                if (Buffer != '\0')
-                {
-                    currentChar = Buffer;
-                    NumberInL--;
-                    Buffer = '\0';
-                }
-                else
-                {
-                    currentChar = ReadNextChar();
-                }
+                currentChar = ReadNextChar();
             }
 
             if (currentChar == '\0')
@@ -342,7 +335,7 @@ namespace LANG
                 IsCommentary(ref currentChar);
                 if (Separators.Contains(currentChar))
                 {
-                    if(Checker)
+                    if (Checker)
                     {
                         Checker = false;
                         if (!string.IsNullOrEmpty(currentLexeme))
@@ -350,7 +343,7 @@ namespace LANG
                             lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
                             tokenType = GetTokenType(lexeme);
                             int ident = -1;
-                            if(tokenType == TokenType.id)
+                            if (tokenType == TokenType.id)
                             {
                                 if (tokenType == TokenType.id)
                                 {
@@ -374,16 +367,7 @@ namespace LANG
                         SaveChecker = true;
                     }
                     currentLexeme += currentChar;
-                    if (Buffer != '\0')
-                    {
-                        currentChar = Buffer;
-                        NumberInL--;
-                        Buffer = '\0';
-                    }
-                    else
-                    {
-                        currentChar = ReadNextChar();
-                    }
+                    currentChar = ReadNextChar();
                     if (!string.IsNullOrEmpty(currentLexeme))
                     {
                         lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
@@ -420,8 +404,8 @@ namespace LANG
                         currentChar = ReadNextChar();
                     }
                 }
-                else 
-                if(char.IsLetterOrDigit(currentChar) || ReservedWords.Contains(currentChar.ToString()))
+                else
+                if (char.IsLetterOrDigit(currentChar) || ReservedWords.Contains(currentChar.ToString()))
                 {
                     if (currentChar == '\n')
                     {
@@ -429,23 +413,14 @@ namespace LANG
                         lineNumber++;
                     }
                     currentLexeme += currentChar;
-                    if (Buffer != '\0')
-                    {
-                        currentChar = Buffer;
-                        NumberInL--;
-                        Buffer = '\0';
-                    }
-                    else
-                    {
-                        currentChar = ReadNextChar();
-                    }
+                    currentChar = ReadNextChar();
                     Checker = true;
                     SaveChecker = false;
                 }
                 else
-                    if (currentChar!='\0' && currentChar!='\n' && !char.IsWhiteSpace(currentChar))
+                    if (currentChar != '\0' && currentChar != '\n' && !char.IsWhiteSpace(currentChar))
                 {
-                    tokens.Add(new Token(TokenType.Other, ""+currentChar, lineNumber));
+                    tokens.Add(new Token(TokenType.Other, "" + currentChar, lineNumber));
                 }
             }
             if (currentChar != '\0' && currentChar != '\n' && !char.IsWhiteSpace(currentChar))
@@ -459,7 +434,7 @@ namespace LANG
             }
             if (!SaveChecker)
             {
-                if(!string.IsNullOrEmpty(currentLexeme))
+                if (!string.IsNullOrEmpty(currentLexeme))
                 {
                     lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
                     tokenType = GetTokenType(lexeme);
@@ -485,8 +460,8 @@ namespace LANG
                     tokens.Add(new Token(tokenType, lexeme, lineNumber, NumberInL - lexeme.Length, ident));
                     currentLexeme = "";
                 }
-            }           
-            
+            }
+
             lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
             if (string.IsNullOrEmpty(lexeme))
             {
