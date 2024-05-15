@@ -266,11 +266,11 @@ namespace LANG
             return true;
         }
 
-        private void IsCommentary(ref char currentChar, ref char Buf)
+        private void IsCommentary(ref char currentChar, ref string Buf, ref List<Token> tokens)
         {
             if (currentChar == '/')
             {
-                Buf = currentChar;
+                Buffer = currentChar;
                 currentChar = ReadNextChar();
                 OnBuf = true;
 
@@ -298,7 +298,7 @@ namespace LANG
                             {
                                 currentChar = ReadNextChar();
                                 Buffer = '\0';
-                                CommentaryR = true;
+                                CommentaryR = true; 
                                 OnBuf = false;
                                 return;
                             }
@@ -309,7 +309,62 @@ namespace LANG
                 {
                     OnBuf = false;
                 }
-                CommentaryR = false;
+                CommentaryR = false; 
+                if (!CommentaryR)
+                {
+                    string lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
+                    TokenType tokenType = GetTokenType(lexeme);
+                    int ident = -1;
+                    if (tokenType == TokenType.id)
+                    {
+                        if (tokenType == TokenType.id)
+                        {
+                            // Проверяем, есть ли идентификатор уже в таблице
+                            if (identifierIndexTable.ContainsKey(lexeme))
+                            {
+                                // Если есть, берем его индекс
+                                ident = identifierIndexTable[lexeme];
+                            }
+                            else
+                            {
+                                // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
+                                ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
+                                identifierIndexTable.Add(lexeme, ident);
+                            }
+                        }
+                    }
+                    if (lexeme != "")
+                    {
+                        tokens.Add(new Token(tokenType, lexeme, lineNumber, NumberInL - lexeme.Length, ident));
+                    }
+                    currentLexeme = "";
+
+
+                    currentLexeme += '/';
+                    lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
+                    tokenType = GetTokenType(lexeme);
+                    ident = -1;
+                    if (tokenType == TokenType.id)
+                    {
+                        if (tokenType == TokenType.id)
+                        {
+                            // Проверяем, есть ли идентификатор уже в таблице
+                            if (identifierIndexTable.ContainsKey(lexeme))
+                            {
+                                // Если есть, берем его индекс
+                                ident = identifierIndexTable[lexeme];
+                            }
+                            else
+                            {
+                                // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
+                                ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
+                                identifierIndexTable.Add(lexeme, ident);
+                            }
+                        }
+                    }
+                    tokens.Add(new Token(tokenType, lexeme, lineNumber, NumberInL - lexeme.Length, ident));
+                    currentLexeme = "";
+                }
                 return;
             }
             CommentaryR = true;
@@ -340,34 +395,7 @@ namespace LANG
                 return;
             }
 
-            IsCommentary(ref currentChar, ref Buffer);
-            if (!CommentaryR)
-            {
-                currentLexeme += '/';
-                lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
-                tokenType = GetTokenType(lexeme);
-                int ident = -1;
-                if (tokenType == TokenType.id)
-                {
-                    if (tokenType == TokenType.id)
-                    {
-                        // Проверяем, есть ли идентификатор уже в таблице
-                        if (identifierIndexTable.ContainsKey(lexeme))
-                        {
-                            // Если есть, берем его индекс
-                            ident = identifierIndexTable[lexeme];
-                        }
-                        else
-                        {
-                            // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
-                            ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
-                            identifierIndexTable.Add(lexeme, ident);
-                        }
-                    }
-                }
-                tokens.Add(new Token(tokenType, lexeme, lineNumber, NumberInL - lexeme.Length, ident));
-                currentLexeme = "";
-            }
+            IsCommentary(ref currentChar, ref currentLexeme, ref tokens);
 
             // Считывание букв, цифр и других символов для формирования лексемы
             while (char.IsLetterOrDigit(currentChar) || ReservedWords.Contains(currentChar.ToString()))
@@ -377,34 +405,8 @@ namespace LANG
                     NumberInL = 0;
                     lineNumber++;
                 }
-                IsCommentary(ref currentChar, ref Buffer);
-                if (!CommentaryR)
-                {
-                    currentLexeme += '/';
-                    lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
-                    tokenType = GetTokenType(lexeme);
-                    int ident = -1;
-                    if (tokenType == TokenType.id)
-                    {
-                        if (tokenType == TokenType.id)
-                        {
-                            // Проверяем, есть ли идентификатор уже в таблице
-                            if (identifierIndexTable.ContainsKey(lexeme))
-                            {
-                                // Если есть, берем его индекс
-                                ident = identifierIndexTable[lexeme];
-                            }
-                            else
-                            {
-                                // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
-                                ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
-                                identifierIndexTable.Add(lexeme, ident);
-                            }
-                        }
-                    }
-                    tokens.Add(new Token(tokenType, lexeme, lineNumber, NumberInL - lexeme.Length, ident));
-                    currentLexeme = "";
-                }
+                IsCommentary(ref currentChar, ref currentLexeme, ref tokens);
+                
                 if (Separators.Contains(currentChar))
                 {
                     if (Checker)
