@@ -494,12 +494,12 @@ namespace LANG
                 else
                     if (currentChar != '\0' && currentChar != '\n' && !char.IsWhiteSpace(currentChar))
                 {
-                    tokens.Add(new Token(TokenType.Other, "" + currentChar, lineNumber));
+                    tokens.Add(new Token(TokenType.Other, "" + currentChar, lineNumber, NumberInL - 1));
                 }
             }
             if (currentChar != '\0' && currentChar != '\n' && !char.IsWhiteSpace(currentChar))
             {
-                tokens.Add(new Token(TokenType.Other, "" + currentChar, lineNumber));
+                tokens.Add(new Token(TokenType.Other, "" + currentChar, lineNumber, NumberInL - 1));
             }
             if (currentChar == '\n')
             {
@@ -571,6 +571,11 @@ namespace LANG
             return tokens;
         }
 
+        public Dictionary<string, int> GetIdTable()
+        {
+            return identifierIndexTable;
+        }
+
         public class Error
         {
             public string Lexeme { get; set; }
@@ -633,7 +638,9 @@ namespace LANG
     {
         public TokenType TokenType { get; set; }
         public string Lexeme { get; set; }
+        // Номер строки токена
         public int LineNumber { get; set; }
+        // Номер символа в строке у токена
         public int NumberInLine { get; set; }
         public int ID { get; set; }
 

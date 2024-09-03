@@ -37,6 +37,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.richTextBoxErrors = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
             // buttonAnalyse
@@ -61,6 +63,8 @@
             // 
             // richTextBoxOutput
             // 
+            this.richTextBoxOutput.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.richTextBoxOutput.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBoxOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.richTextBoxOutput.Location = new System.Drawing.Point(655, 31);
             this.richTextBoxOutput.Name = "richTextBoxOutput";
@@ -74,7 +78,7 @@
             this.textBoxAnalyse.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.textBoxAnalyse.Location = new System.Drawing.Point(12, 31);
             this.textBoxAnalyse.Name = "textBoxAnalyse";
-            this.textBoxAnalyse.Size = new System.Drawing.Size(536, 655);
+            this.textBoxAnalyse.Size = new System.Drawing.Size(536, 477);
             this.textBoxAnalyse.TabIndex = 6;
             this.textBoxAnalyse.Text = "";
             // 
@@ -128,11 +132,33 @@
             this.label3.TabIndex = 11;
             this.label3.Text = "Поле вывода токенов";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(12, 515);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(50, 13);
+            this.label4.TabIndex = 13;
+            this.label4.Text = "Ошибки:";
+            // 
+            // richTextBoxErrors
+            // 
+            this.richTextBoxErrors.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBoxErrors.ForeColor = System.Drawing.Color.Red;
+            this.richTextBoxErrors.Location = new System.Drawing.Point(12, 534);
+            this.richTextBoxErrors.Name = "richTextBoxErrors";
+            this.richTextBoxErrors.ReadOnly = true;
+            this.richTextBoxErrors.Size = new System.Drawing.Size(536, 152);
+            this.richTextBoxErrors.TabIndex = 14;
+            this.richTextBoxErrors.Text = "";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1202, 698);
+            this.Controls.Add(this.richTextBoxErrors);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -160,6 +186,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.RichTextBox richTextBoxErrors;
     }
 }
 

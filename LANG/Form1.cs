@@ -22,6 +22,7 @@ namespace LANG
         private void buttonAnalyse_Click(object sender, EventArgs e)
         {
             richTextBoxOutput.Text = "";
+            richTextBoxErrors.Text = "";
             // Получаем текст из текстбокса
             string code = textBoxAnalyse.Text;
 
@@ -35,8 +36,15 @@ namespace LANG
                 LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(code);
 
                 List<Token> tokens = lexicalAnalyzer.GetTokens();
+                Dictionary<string, int> indexesTable = lexicalAnalyzer.GetIdTable();
                 foreach (Token token in tokens)
                 {
+                    // Вывод ошибок (Тип - Other)
+                    if (token.TokenType == TokenType.Other)
+                    {
+                        richTextBoxErrors.AppendText($"Ошибка в строке <{token.LineNumber}, {token.NumberInLine}>, ( Лексема: '{token.Lexeme}' ){Environment.NewLine}");
+                    }
+
                     if (token.TokenType == TokenType.id)
                     {
                         richTextBoxOutput.AppendText($"<{token.TokenType}, {token.ID}>, ( Лексема: '{token.Lexeme}' ){Environment.NewLine}");
@@ -45,6 +53,11 @@ namespace LANG
                     {
                         richTextBoxOutput.AppendText($"<{token.TokenType}>, ( Лексема: '{token.Lexeme}' ){Environment.NewLine}");
                     }
+                }
+
+                foreach (KeyValuePair<string, int> indexTable in indexesTable)
+                {
+                    Console.WriteLine($"<{indexTable.Key} = {indexTable.Value}>{Environment.NewLine}");
                 }
             }
         }
