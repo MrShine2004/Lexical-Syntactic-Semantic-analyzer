@@ -16,7 +16,7 @@ namespace LANG
         public Form1()
         {
             InitializeComponent();
-            textBoxAnalyse.Text = "module MyProgram;\r\nvar x: int;\r\narr [3] a: int; \r\nbegin\r\n    x = 10;\r\n    do {\r\n        x = x * 2.54 + x*x+3;\r\n} repeat (x > 5 || x >= 0 && x != 0 - 5 || == 6);\r\n  /* This is my Commentary */  \r\n else {\r\n        x = 0 - x + 5;\r\n}\r\nend\r\n";
+            textBoxAnalyse.Text = "module MyProgram;\r\nvar x: int;\r\narr [3] a: int; \r\nbegin\r\n    x = 10;\r\n    do {\r\n        x = x * 2.54 + x*x+3;\r\n} repeat (x > 5 || x >= 0 && x != 0 - 5 || x == 6);\r\n  /* This is my Commentary */  \r\n else {\r\n        x = 0 - x + 5;\r\n}\r\nend\r\n";
         }
 
         private void buttonAnalyse_Click(object sender, EventArgs e)
@@ -42,16 +42,16 @@ namespace LANG
                     // Вывод ошибок (Тип - Other)
                     if (token.TokenType == TokenType.Other)
                     {
-                        richTextBoxErrors.AppendText($"Ошибка в строке <{token.LineNumber}, {token.NumberInLine}>, ( Лексема: '{token.Lexeme}' ){Environment.NewLine}");
+                        richTextBoxErrors.AppendText($"Лексическая ошибка! Неопознанный символ ( Лексема: ' {token.Lexeme} ' ) в строке <{token.LineNumber}, {token.NumberInLine}>{Environment.NewLine}");
                     }
 
                     if (token.TokenType == TokenType.id)
                     {
-                        richTextBoxOutput.AppendText($"<{token.TokenType}, {token.ID}>, ( Лексема: '{token.Lexeme}' ){Environment.NewLine}");
+                        richTextBoxOutput.AppendText($"<{token.TokenType}, {token.ID}>, ( Лексема: ' {token.Lexeme} ' ){Environment.NewLine}");
                     }
                     else
                     {
-                        richTextBoxOutput.AppendText($"<{token.TokenType}>, ( Лексема: '{token.Lexeme}' ){Environment.NewLine}");
+                        richTextBoxOutput.AppendText($"<{token.TokenType}>, ( Лексема: ' {token.Lexeme} ' ){Environment.NewLine}");
                     }
                 }
 
@@ -59,7 +59,14 @@ namespace LANG
                 {
                     Console.WriteLine($"<{indexTable.Key} = {indexTable.Value}>{Environment.NewLine}");
                 }
+
+                if(richTextBoxErrors.Text == "")
+                {
+                    SyntaxisAnalyser syntaxisAnalyzer = new SyntaxisAnalyser(tokens);
+                }
+
             }
+
         }
 
 
@@ -67,6 +74,7 @@ namespace LANG
         {
             richTextBoxOutput.Text = "";
             textBoxAnalyse.Text = "";
+            richTextBoxErrors.Text = "";
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -82,6 +90,7 @@ namespace LANG
         private void RightFeel_Click(object sender, EventArgs e)
         {
             richTextBoxOutput.Text = "";
+            richTextBoxErrors.Text = "";
         }
 
         private void Form1_Load(object sender, EventArgs e)
