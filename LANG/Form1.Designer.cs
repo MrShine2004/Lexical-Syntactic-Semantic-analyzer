@@ -39,6 +39,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.richTextBoxErrors = new System.Windows.Forms.RichTextBox();
+            this.richTextBoxIdentTables = new System.Windows.Forms.RichTextBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // buttonAnalyse
@@ -69,7 +71,7 @@
             this.richTextBoxOutput.Location = new System.Drawing.Point(655, 31);
             this.richTextBoxOutput.Name = "richTextBoxOutput";
             this.richTextBoxOutput.ReadOnly = true;
-            this.richTextBoxOutput.Size = new System.Drawing.Size(535, 655);
+            this.richTextBoxOutput.Size = new System.Drawing.Size(424, 655);
             this.richTextBoxOutput.TabIndex = 5;
             this.richTextBoxOutput.Text = "";
             // 
@@ -143,7 +145,7 @@
             // 
             // richTextBoxErrors
             // 
-            this.richTextBoxErrors.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBoxErrors.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.richTextBoxErrors.ForeColor = System.Drawing.Color.Red;
             this.richTextBoxErrors.Location = new System.Drawing.Point(12, 534);
             this.richTextBoxErrors.Name = "richTextBoxErrors";
@@ -152,11 +154,33 @@
             this.richTextBoxErrors.TabIndex = 14;
             this.richTextBoxErrors.Text = "";
             // 
+            // richTextBoxIdentTables
+            // 
+            this.richTextBoxIdentTables.BackColor = System.Drawing.SystemColors.Window;
+            this.richTextBoxIdentTables.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBoxIdentTables.Location = new System.Drawing.Point(1085, 31);
+            this.richTextBoxIdentTables.Name = "richTextBoxIdentTables";
+            this.richTextBoxIdentTables.ReadOnly = true;
+            this.richTextBoxIdentTables.Size = new System.Drawing.Size(418, 655);
+            this.richTextBoxIdentTables.TabIndex = 15;
+            this.richTextBoxIdentTables.Text = "";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(1085, 12);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(167, 13);
+            this.label5.TabIndex = 16;
+            this.label5.Text = "Поле вывода идентификаторов";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1202, 698);
+            this.ClientSize = new System.Drawing.Size(1511, 703);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.richTextBoxIdentTables);
             this.Controls.Add(this.richTextBoxErrors);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -187,7 +211,9 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.RichTextBox richTextBoxErrors;
+        public System.Windows.Forms.RichTextBox richTextBoxErrors;
+        private System.Windows.Forms.RichTextBox richTextBoxIdentTables;
+        private System.Windows.Forms.Label label5;
     }
 }
 

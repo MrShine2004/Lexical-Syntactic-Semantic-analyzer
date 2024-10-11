@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using static LANG.LexicalAnalyzer;
+using System.Globalization;
 
 namespace LANG
 {
@@ -47,9 +49,32 @@ namespace LANG
         private static readonly string[] ReservedWords = { "true", "false", "+", "-", "*", "/", "=", "|", "&", "<", ">", "<=", ">=", "==", "!=", "||", "&&", "!", "(", ")", "{", "}", "[", "]", ";", ":", ",", ".", "module", "var", "int", "bool", "float", "arr", "begin", "end", "while", "repeat", "if", "else" };
         //private static readonly string[][] Tokens = { { } };
         private List<Error> Errors = new List<Error>();
-        private Dictionary<string, int> identifierIndexTable = new Dictionary<string, int>();
+        public class IdentifierInfo
+        {
+            public string Lexeme { get; set; }        // Лексема
+            public int ID { get; set; }               // Уникальный идентификатор
+            public TokenType Type { get; set; }       // Тип токена
+            public object Value { get; set; }         // Значение переменной или элемента массива
+            public int[] Dimensions { get; set; }     // Размерности массива
+            public object[] ArrayData { get; set; }   // Данные элементов массива
+            public int Address { get; set; }          // Адрес переменной
 
-        public LexicalAnalyzer(string code)
+            public IdentifierInfo (string lexeme, int id, TokenType type, object value = null)
+            {
+                Lexeme = lexeme;
+                ID = id;
+                Type = type;
+                Value = value;
+                Dimensions = null;   // Устанавливаем размерности массива, если есть
+                ArrayData = null;     // Данные массива
+                Address = -1;         // Адрес переменной в памяти
+            }
+        }
+
+        private Dictionary<string, IdentifierInfo> identifierTable = new Dictionary<string, IdentifierInfo>();
+
+
+        public LexicalAnalyzer (string code)
         {
             reader = new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(code)));
             // Создание таблицы индексов идентификаторов
@@ -101,20 +126,12 @@ namespace LANG
 
             switch (lexeme)
             {
-                case "const":
-                    return TokenType.tConst;
-                case "else":
-                    return TokenType.tElse;
                 case "end":
                     return TokenType.tEnd;
-                case "functional":
-                    return TokenType.tFunc;
                 case "repeat":
                     return TokenType.tRepeat;
-                case "do":
-                    return TokenType.tDo;
-                case "if":
-                    return TokenType.tIf;
+                case "until":
+                    return TokenType.tUntil;
                 case "module":
                     return TokenType.tModule;
                 case "begin":
@@ -231,21 +248,27 @@ namespace LANG
             string pattern = @"^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$";
             return Regex.IsMatch(input, pattern);
         }
-        private bool IsBoolean(string lexeme)
+        public bool IsBoolean (string lexeme)
         {
-            bool result;
-            return bool.TryParse(lexeme, out result);
+            return lexeme.ToLower() == "true" || lexeme.ToLower() == "false";
         }
-        private bool IsInteger(string lexeme)
+
+        public bool IsInteger (string lexeme)
         {
+            // Проверяем, является ли строка целым числом, и она не содержит точки
             int result;
-            return int.TryParse(lexeme, out result);
+            bool isInteger = int.TryParse(lexeme, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
+            return isInteger && !lexeme.Contains('.');
         }
-        private bool IsFloat(string lexeme)
+
+        public bool IsFloat (string lexeme)
         {
+            // Проверяем, является ли строка числом с плавающей запятой, и она содержит точку
             float result;
-            return float.TryParse(lexeme, out result);
+            bool isFloat = float.TryParse(lexeme, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
+            return isFloat && lexeme.Contains('.');
         }
+
         private bool IsIdentifier(string lexeme)
         {
             // Проверяем, начинается ли строка с буквы
@@ -314,29 +337,32 @@ namespace LANG
                 {
                     string lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
                     TokenType tokenType = GetTokenType(lexeme);
+                    IdentifierInfo identifierInfo = null; // Объект для хранения информации об идентификаторе
                     int ident = -1;
+
                     if (tokenType == TokenType.id)
                     {
-                        if (tokenType == TokenType.id)
+                        // Проверяем, есть ли идентификатор уже в таблице
+                        if (identifierTable.ContainsKey(lexeme))
                         {
-                            // Проверяем, есть ли идентификатор уже в таблице
-                            if (identifierIndexTable.ContainsKey(lexeme))
-                            {
-                                // Если есть, берем его индекс
-                                ident = identifierIndexTable[lexeme];
-                            }
-                            else
-                            {
-                                // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
-                                ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
-                                identifierIndexTable.Add(lexeme, ident);
-                            }
+                            // Если есть, берем информацию об идентификаторе
+                            identifierInfo = identifierTable[lexeme];
+                            ident = identifierInfo.ID;
+                        }
+                        else
+                        {
+                            // Если нет, создаём новый идентификатор и присваиваем ему ID
+                            ident = identifierTable.Count + 1; // Предполагаем, что индексы начинаются с 1
+                            identifierInfo = new IdentifierInfo(lexeme, ident, TokenType.EOF);
+                            identifierTable.Add(lexeme, identifierInfo);
                         }
                     }
+
                     if (lexeme != "")
                     {
                         tokens.Add(new Token(tokenType, lexeme, lineNumber, NumberInL - lexeme.Length, ident));
                     }
+
                     currentLexeme = "";
 
 
@@ -346,20 +372,19 @@ namespace LANG
                     ident = -1;
                     if (tokenType == TokenType.id)
                     {
-                        if (tokenType == TokenType.id)
+                        // Проверяем, есть ли идентификатор уже в таблице
+                        if (identifierTable.ContainsKey(lexeme))
                         {
-                            // Проверяем, есть ли идентификатор уже в таблице
-                            if (identifierIndexTable.ContainsKey(lexeme))
-                            {
-                                // Если есть, берем его индекс
-                                ident = identifierIndexTable[lexeme];
-                            }
-                            else
-                            {
-                                // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
-                                ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
-                                identifierIndexTable.Add(lexeme, ident);
-                            }
+                            // Если есть, берем информацию об идентификаторе
+                            identifierInfo = identifierTable[lexeme];
+                            ident = identifierInfo.ID;
+                        }
+                        else
+                        {
+                            // Если нет, создаём новый идентификатор и присваиваем ему ID
+                            ident = identifierTable.Count + 1; // Предполагаем, что индексы начинаются с 1
+                            identifierInfo = new IdentifierInfo(lexeme, ident, TokenType.EOF);
+                            identifierTable.Add(lexeme, identifierInfo);
                         }
                     }
                     tokens.Add(new Token(tokenType, lexeme, lineNumber, NumberInL - lexeme.Length, ident));
@@ -416,22 +441,25 @@ namespace LANG
                         {
                             lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
                             tokenType = GetTokenType(lexeme);
+                            IdentifierInfo identifierInfo = null; // Объект для хранения информации об идентификаторе
                             int ident = -1;
                             if (tokenType == TokenType.id)
                             {
                                 if (tokenType == TokenType.id)
                                 {
                                     // Проверяем, есть ли идентификатор уже в таблице
-                                    if (identifierIndexTable.ContainsKey(lexeme))
+                                    if (identifierTable.ContainsKey(lexeme))
                                     {
-                                        // Если есть, берем его индекс
-                                        ident = identifierIndexTable[lexeme];
+                                        // Если есть, берем информацию об идентификаторе
+                                        identifierInfo = identifierTable[lexeme];
+                                        ident = identifierInfo.ID;
                                     }
                                     else
                                     {
-                                        // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
-                                        ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
-                                        identifierIndexTable.Add(lexeme, ident);
+                                        // Если нет, создаём новый идентификатор и присваиваем ему ID
+                                        ident = identifierTable.Count + 1; // Предполагаем, что индексы начинаются с 1
+                                        identifierInfo = new IdentifierInfo(lexeme, ident, TokenType.EOF);
+                                        identifierTable.Add(lexeme, identifierInfo);
                                     }
                                 }
                             }
@@ -446,22 +474,25 @@ namespace LANG
                     {
                         lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
                         tokenType = GetTokenType(lexeme);
+                        IdentifierInfo identifierInfo = null; // Объект для хранения информации об идентификаторе
                         int ident = -1;
                         if (tokenType == TokenType.id)
                         {
                             if (tokenType == TokenType.id)
                             {
                                 // Проверяем, есть ли идентификатор уже в таблице
-                                if (identifierIndexTable.ContainsKey(lexeme))
+                                if (identifierTable.ContainsKey(lexeme))
                                 {
-                                    // Если есть, берем его индекс
-                                    ident = identifierIndexTable[lexeme];
+                                    // Если есть, берем информацию об идентификаторе
+                                    identifierInfo = identifierTable[lexeme];
+                                    ident = identifierInfo.ID;
                                 }
                                 else
                                 {
-                                    // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
-                                    ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
-                                    identifierIndexTable.Add(lexeme, ident);
+                                    // Если нет, создаём новый идентификатор и присваиваем ему ID
+                                    ident = identifierTable.Count + 1; // Предполагаем, что индексы начинаются с 1
+                                    identifierInfo = new IdentifierInfo(lexeme, ident, TokenType.EOF);
+                                    identifierTable.Add(lexeme, identifierInfo);
                                 }
                             }
                         }
@@ -512,22 +543,25 @@ namespace LANG
                 {
                     lexeme = currentLexeme.ToLower(); // Преобразуем в нижний регистр
                     tokenType = GetTokenType(lexeme);
+                    IdentifierInfo identifierInfo = null; // Объект для хранения информации об идентификаторе
                     int ident = -1;
                     if (tokenType == TokenType.id)
                     {
                         if (tokenType == TokenType.id)
                         {
                             // Проверяем, есть ли идентификатор уже в таблице
-                            if (identifierIndexTable.ContainsKey(lexeme))
+                            if (identifierTable.ContainsKey(lexeme))
                             {
-                                // Если есть, берем его индекс
-                                ident = identifierIndexTable[lexeme];
+                                // Если есть, берем информацию об идентификаторе
+                                identifierInfo = identifierTable[lexeme];
+                                ident = identifierInfo.ID;
                             }
                             else
                             {
-                                // Если нет, добавляем новый идентификатор в таблицу и присваиваем ему индекс
-                                ident = identifierIndexTable.Count + 1; // Предполагаем, что индексы начинаются с 1
-                                identifierIndexTable.Add(lexeme, ident);
+                                // Если нет, создаём новый идентификатор и присваиваем ему ID
+                                ident = identifierTable.Count + 1; // Предполагаем, что индексы начинаются с 1
+                                identifierInfo = new IdentifierInfo(lexeme, ident, TokenType.EOF);
+                                identifierTable.Add(lexeme, identifierInfo);
                             }
                         }
                     }
@@ -568,12 +602,14 @@ namespace LANG
                 }
             }
 
+            // После завершения разбора текста добавляем EOF токен
+            tokens.Add(new Token(TokenType.EOF, "", lineNumber, NumberInL));
             return tokens;
         }
 
-        public Dictionary<string, int> GetIdTable()
+        public Dictionary<string, IdentifierInfo> GetIdTable ()
         {
-            return identifierIndexTable;
+            return identifierTable;
         }
 
         public class Error
@@ -590,16 +626,12 @@ namespace LANG
 
     public enum TokenType
     {
-        tConst,
-        tElse,
         tEnd,
-        tFunc,
-        tIf,
         tModule,
         tBegin,
         tArray,
         tRepeat,
-        tDo,
+        tUntil,
         tVar,
         tInt,
         tFloat,
@@ -632,6 +664,7 @@ namespace LANG
         ct,
         tTrue,
         tFalse,
+        EOF,
         Other
     }
     public class Token
