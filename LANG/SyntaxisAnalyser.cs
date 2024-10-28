@@ -19,6 +19,9 @@ namespace LANG
         private LexicalAnalyzer lexicalAnalyzer;
         public List<int> curDimensions { get; set; } = new List<int>();
         bool check = false;
+        private const int sizeInt = 4;
+        private const int sizeFloat = 8;
+        private const int sizeBool = 1;
 
         public SyntaxisAnalyser (List<Token> tokens,
             Form1 form,
@@ -81,7 +84,6 @@ namespace LANG
                 CurrentToken.TokenType == TokenType.tBool)
             {
                 indexesTable[curIdent].Type = CurrentToken.TokenType;
-                indexesTable[curIdent].Address = currentAddress;
 
                 // Проверка, является ли переменная массивом
                 if (curDimensions != null && curDimensions.Count > 0)
@@ -95,13 +97,31 @@ namespace LANG
                         totalElements *= dim;
                     }
 
-                    // Вычисляем общий объем памяти, который занимает массив
-                    currentAddress += totalElements * 4;  // Например, 4 байта на элемент
+                    // Проверяем кратность текущего адреса размеру типа
+                    int size = GetTypeSize(indexesTable[curIdent].Type);
+
+                    if (currentAddress % size != 0)
+                    {
+                        currentAddress += size - (currentAddress % size);  // Выравнивание по размеру типа
+                    }
+                    indexesTable[curIdent].Address = currentAddress;
+
+                    // Вычисляем общий объем памяти, который занимает переменная или массив
+                    currentAddress += totalElements * size;
                 }
                 else
                 {
-                    // Если это не массив, увеличиваем адрес только на 4 байта для переменной
-                    currentAddress += 4;
+                    // Проверяем кратность текущего адреса размеру типа
+                    int size = GetTypeSize(indexesTable[curIdent].Type);
+
+                    if (currentAddress % size != 0)
+                    {
+                        currentAddress += size - (currentAddress % size);  // Выравнивание по размеру типа
+                    }
+                    indexesTable[curIdent].Address = currentAddress;
+
+                    // Вычисляем общий объем памяти, который занимает переменная или массив
+                    currentAddress += size;
                 }
 
                 curDimensions.Clear(); // Очищаем список перед началом новой записи
@@ -248,30 +268,56 @@ namespace LANG
             
         }
 
-        private void ParseArrayAccess ()
+        private object ParseArrayAccess ()
         {
-            List<int> indexes = new List<int>();
+            // Здесь мы используем object, чтобы результатом мог быть как числовой индекс, так и элемент массива.
+            List<object> indexes = new List<object>();
 
             // Ожидаем открывающую скобку для индексации массива
             Expect(TokenType.kvsc1);
 
-            // Чтение индексов массива (например, a[1, 2])
+            // Чтение индексов массива (например, a[1, 2] или a[a[1,2], 1])
             while (CurrentToken.TokenType != TokenType.kvsc2)
             {
-                if(CurrentToken.TokenType == TokenType.EOF)
+                if (CurrentToken.TokenType == TokenType.EOF)
                 {
                     throw new Exception($"Ошибка синтаксического анализа: нет закрывающей скобки, но получен {CurrentToken.Lexeme}");
                 }
-                if (CurrentToken.TokenType == TokenType.ct)
+
+                // Рекурсивный вызов для вложенной индексации
+                if (CurrentToken.TokenType == TokenType.id)
                 {
+                    string arrayName = CurrentToken.Lexeme;
+
+                    if (indexesTable.ContainsKey(arrayName) && indexesTable[arrayName].Dimensions != null && indexesTable[arrayName].Dimensions.Length > 0)
+                    {
+                        Expect(TokenType.id);
+                        // Если текущий токен — массив, вызываем рекурсивный анализ
+                        object result = ParseArrayAccess();
+                        indexes.Add(result);  // Добавляем результат рекурсивного вызова
+                    }
+                    else
+                    {
+                        // Если это переменная или другая структура, добавляем как индекс
+                        indexes.Add(arrayName);
+                        Expect(TokenType.id);
+                    }
+                }
+                else if (CurrentToken.TokenType == TokenType.ct)
+                {
+                    // Если это числовой индекс
                     int index = int.Parse(CurrentToken.Lexeme);
                     indexes.Add(index);
+                    Expect(TokenType.ct);
                 }
-                Expect(TokenType.ct);
+                else
+                {
+                    throw new Exception($"Ошибка синтаксического анализа: недопустимый индекс '{CurrentToken.Lexeme}' для массива.");
+                }
 
                 if (CurrentToken.TokenType == TokenType.z)
                 {
-                    Expect(TokenType.z);
+                    Expect(TokenType.z);  // Пропускаем запятую
                 }
                 else break;
             }
@@ -285,17 +331,25 @@ namespace LANG
                 throw new Exception($"Ошибка семантического анализа: неправильное количество индексов для массива '{curIdent}'");
             }
 
-            // Проверка выхода за границы массива
+            // Проверка индексов (проводится только для числовых индексов)
             for (int i = 0; i < indexes.Count; i++)
             {
-                if (indexes[i] >= indexesTable[curIdent].Dimensions[i] || indexes[i] < 0)
+                if (indexes[i] is int)
                 {
-                    throw new Exception($"Ошибка семантического анализа: индекс {indexes[i]} выходит за пределы массива '{curIdent}' в измерении {i}");
+                    int index = (int)indexes[i];
+                    if (index >= indexesTable[curIdent].Dimensions[i] || index < 0)
+                    {
+                        throw new Exception($"Ошибка семантического анализа: индекс {index} выходит за пределы массива '{curIdent}' в измерении {i}");
+                    }
                 }
+                // Если индекс — это массив или переменная, проверка границ будет на этапе выполнения.
             }
 
-            // Здесь можно сохранить или использовать индексы для дальнейшего присваивания
+            // Возвращаем объект — это может быть либо число, либо элемент массива
+            return indexes;
         }
+
+
 
 
         // Цикл пост, 16
@@ -474,6 +528,21 @@ namespace LANG
             {
                 form.HighlightError(CurrentToken.LineNumber, CurrentToken.NumberInLine-1, CurrentToken.Lexeme.Length, Color.Red);
                 throw new Exception($"Ошибка синтаксического анализа ({CurrentToken.LineNumber}, {CurrentToken.NumberInLine}): ожидался {expected}, но получен {CurrentToken.TokenType}");
+            }
+        }
+
+        private int GetTypeSize (TokenType type)
+        {
+            switch (type)
+            {
+                case TokenType.tInt:
+                    return sizeInt;   // 4 байта
+                case TokenType.tFloat:
+                    return sizeFloat; // 8 байт
+                case TokenType.tBool:
+                    return sizeBool;  // 1 байт
+                default:
+                    throw new Exception("Неизвестный тип");
             }
         }
     }
