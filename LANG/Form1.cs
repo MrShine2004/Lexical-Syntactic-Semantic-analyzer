@@ -78,7 +78,7 @@ namespace LANG
                 {
                     foreach (KeyValuePair<string, LANG.LexicalAnalyzer.IdentifierInfo> indexTable in indexesTable)
                     {
-                        richTextBoxIdentTables.AppendText($"< ID: {indexTable.Value.ID}, {indexTable.Key}; Address: {indexTable.Value.Address}; Type: {indexTable.Value.Type};>{Environment.NewLine}");
+                        richTextBoxIdentTables.AppendText($"< ID: {indexTable.Value.ID}, {indexTable.Key}; Address: {indexTable.Value.Address}; Type: {indexTable.Value.Type}; D: {indexTable.Value.Dimensions};>{Environment.NewLine}");
                     }
                 }
             }

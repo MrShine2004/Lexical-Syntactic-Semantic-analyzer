@@ -289,18 +289,25 @@ namespace LANG
                 {
                     string arrayName = CurrentToken.Lexeme;
 
-                    if (indexesTable.ContainsKey(arrayName) && indexesTable[arrayName].Dimensions != null && indexesTable[arrayName].Dimensions.Length > 0)
+                    if (indexesTable[arrayName].Type == TokenType.tInt)
                     {
-                        Expect(TokenType.id);
-                        // Если текущий токен — массив, вызываем рекурсивный анализ
-                        object result = ParseArrayAccess();
-                        indexes.Add(result);  // Добавляем результат рекурсивного вызова
+                        if (indexesTable.ContainsKey(arrayName) && indexesTable[arrayName].Dimensions != null && indexesTable[arrayName].Dimensions.Length > 0)
+                        {
+                            Expect(TokenType.id);
+                            // Если текущий токен — массив, вызываем рекурсивный анализ
+                            object result = ParseArrayAccess();
+                            indexes.Add(result);  // Добавляем результат рекурсивного вызова
+                        }
+                        else
+                        {
+                            // Если это переменная или другая структура, добавляем как индекс
+                            indexes.Add(arrayName);
+                            Expect(TokenType.id);
+                        }
                     }
                     else
                     {
-                        // Если это переменная или другая структура, добавляем как индекс
-                        indexes.Add(arrayName);
-                        Expect(TokenType.id);
+                        throw new Exception($"Ошибка синтаксического анализа: недопустимый тип '{indexesTable[arrayName].Type}' для индекса массива.");
                     }
                 }
                 else if (CurrentToken.TokenType == TokenType.ct)
