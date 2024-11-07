@@ -401,6 +401,7 @@ namespace LANG
             }
             if(CurrentToken.TokenType == TokenType.And || CurrentToken.TokenType == TokenType.Or)
             {
+                curIdent = "loop";
                 currentTokenIndex++;
                 ParseExpression();
             }
@@ -473,18 +474,35 @@ namespace LANG
                 }
                 currentTokenIndex++;  // Пропускаем константу
             }
+            else if(CurrentToken.TokenType == TokenType.tTrue || CurrentToken.TokenType == TokenType.tFalse)
+            {
+                if (curIdent == "loop")
+                {
+
+                }
+                else if (indexesTable[curIdent].Type == TokenType.tTrue || indexesTable[curIdent].Type == TokenType.tFalse)
+                {
+                    if (!lexicalAnalyzer.IsInteger(CurrentToken.Lexeme))
+                    {
+                        form.HighlightError(CurrentToken.LineNumber, CurrentToken.NumberInLine - 1, CurrentToken.Lexeme.Length, Color.Red);
+                        throw new Exception($"Ошибка семантического анализа: несоответствие типов, должно быть {indexesTable[curIdent].Type}, {CurrentToken.Lexeme} на строке {CurrentToken.LineNumber}");
+                    }
+                }
+                currentTokenIndex++;  // Пропускаем константу
+            }
             else if (CurrentToken.TokenType == TokenType.id)  // Переменная или индексированная переменная
             {
                 if (curIdent == "loop")
                 {
-                    curIdent = CurrentToken.Lexeme;
-                    if(indexesTable[curIdent].Type == TokenType.tBool)
+                    curIdent = "" + indexesTable[CurrentToken.Lexeme].Type;
+                    if (indexesTable[CurrentToken.Lexeme].Type == TokenType.tBool)
                         check = true;
                 }
+                else
                 if (indexesTable[curIdent].Type != indexesTable[CurrentToken.Lexeme].Type)
                 {
                     form.HighlightError(CurrentToken.LineNumber, CurrentToken.NumberInLine - 1, CurrentToken.Lexeme.Length, Color.Red);
-                    throw new Exception($"Ошибка семантического анализа: несоответствие типов, должно быть {indexesTable[curIdent].Type}, {CurrentToken.Lexeme} на строке {CurrentToken.LineNumber}");
+                    throw new Exception($"Ошибка семантического анализа: несоответствие типов, должно быть here error {indexesTable[curIdent].Type}, {CurrentToken.Lexeme} на строке {CurrentToken.LineNumber}");
                 }
                 
                 ParseVariable();  // Парсим переменную
@@ -500,8 +518,7 @@ namespace LANG
                 currentTokenIndex++;  // Пропускаем "!"
                 ParseFactor();  // Парсим фактор после "!"
             }
-            else
-            if (CurrentToken.TokenType == TokenType.And || CurrentToken.TokenType == TokenType.Or)
+            else if (CurrentToken.TokenType == TokenType.And || CurrentToken.TokenType == TokenType.Or)
             {
                 currentTokenIndex++;
                 ParseExpression();
@@ -516,6 +533,7 @@ namespace LANG
         // Переменная или индексированная переменная, 14, 15
         private void ParseVariable ()
         {
+            if(curIdent != "loop")
             curIdent = CurrentToken.Lexeme;
             Expect(TokenType.id);  // Переменная или индексированная переменная
 

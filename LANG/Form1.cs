@@ -18,7 +18,7 @@ namespace LANG
         public Form1()
         {
             InitializeComponent();
-            textBoxAnalyse.Text = "module MyProgram;\r\nvar x: int;\r\narr [3, 3] a: int; \r\nvar b: bool;\r\nbegin\r\n    x = 10;\r\n    a[1, 2] = 4;\r\n    repeat {\r\n        x = (x * (2 + x * x) + 3) / 2;\r\n} until ((x > 5 || a[1, 2] >= 0) && x != 0 - 5 || x == 6);\r\nrepeat {\r\n        x = x + 1;\r\n} until (b);\r\n  /* This is my Commentary */  \r\nend\r\n";
+            textBoxAnalyse.Text = "module MyProgram;\r\nvar x: int;\r\narr [3, 3] a: int; \r\nvar b: bool;\r\nbegin\r\n    x = 10;\r\n    a[1, 2] = 4;\r\n    b = true;\r\n    repeat {\r\n        x = (x * (2 + x * x) + 3) / 2;\r\n} until (b && (x > 5 || a[1, 2] >= 0) && x != 0 - 5 || x == 6 || b);\r\nrepeat {\r\n        x = x + 1;\r\n} until (b);\r\n  /* This is my Commentary */  \r\nend";
         }
 
         private void buttonAnalyse_Click(object sender, EventArgs e)
