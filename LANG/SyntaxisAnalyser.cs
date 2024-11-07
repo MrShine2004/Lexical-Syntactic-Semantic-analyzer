@@ -482,7 +482,7 @@ namespace LANG
                 }
                 else if (indexesTable[curIdent].Type == TokenType.tTrue || indexesTable[curIdent].Type == TokenType.tFalse)
                 {
-                    if (!lexicalAnalyzer.IsInteger(CurrentToken.Lexeme))
+                    if (!lexicalAnalyzer.IsBoolean(CurrentToken.Lexeme))
                     {
                         form.HighlightError(CurrentToken.LineNumber, CurrentToken.NumberInLine - 1, CurrentToken.Lexeme.Length, Color.Red);
                         throw new Exception($"Ошибка семантического анализа: несоответствие типов, должно быть {indexesTable[curIdent].Type}, {CurrentToken.Lexeme} на строке {CurrentToken.LineNumber}");
@@ -498,13 +498,18 @@ namespace LANG
                     if (indexesTable[CurrentToken.Lexeme].Type == TokenType.tBool)
                         check = true;
                 }
-                else
-                if (indexesTable[curIdent].Type != indexesTable[CurrentToken.Lexeme].Type)
+                else if(indexesTable[curIdent].Type == TokenType.tBool)
+                {
+                    check = false;
+                    curIdent = "loop";
+                    ParseExpression();          
+                    return;
+                }
+                else if (indexesTable[curIdent].Type != indexesTable[CurrentToken.Lexeme].Type)
                 {
                     form.HighlightError(CurrentToken.LineNumber, CurrentToken.NumberInLine - 1, CurrentToken.Lexeme.Length, Color.Red);
                     throw new Exception($"Ошибка семантического анализа: несоответствие типов, должно быть here error {indexesTable[curIdent].Type}, {CurrentToken.Lexeme} на строке {CurrentToken.LineNumber}");
                 }
-                
                 ParseVariable();  // Парсим переменную
             }
             else if (CurrentToken.TokenType == TokenType.sc1)  // Открывающая скобка "("
