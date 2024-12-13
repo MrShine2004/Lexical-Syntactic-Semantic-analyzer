@@ -67,7 +67,7 @@
             // 
             this.richTextBoxOutput.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.richTextBoxOutput.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.richTextBoxOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.richTextBoxOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.richTextBoxOutput.Location = new System.Drawing.Point(655, 31);
             this.richTextBoxOutput.Name = "richTextBoxOutput";
             this.richTextBoxOutput.ReadOnly = true;
@@ -146,6 +146,7 @@
             // richTextBoxErrors
             // 
             this.richTextBoxErrors.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.richTextBoxErrors.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.richTextBoxErrors.ForeColor = System.Drawing.Color.Red;
             this.richTextBoxErrors.Location = new System.Drawing.Point(12, 534);
             this.richTextBoxErrors.Name = "richTextBoxErrors";
@@ -158,6 +159,7 @@
             // 
             this.richTextBoxIdentTables.BackColor = System.Drawing.SystemColors.Window;
             this.richTextBoxIdentTables.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBoxIdentTables.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.richTextBoxIdentTables.Location = new System.Drawing.Point(1085, 31);
             this.richTextBoxIdentTables.Name = "richTextBoxIdentTables";
             this.richTextBoxIdentTables.ReadOnly = true;
@@ -193,7 +195,7 @@
             this.Controls.Add(this.buttonClearAll);
             this.Controls.Add(this.buttonAnalyse);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "AYal";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

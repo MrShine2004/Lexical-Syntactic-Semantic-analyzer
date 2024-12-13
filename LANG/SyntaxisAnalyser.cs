@@ -208,7 +208,6 @@ namespace LANG
 
                 Console.WriteLine($"Текущий токен: {CurrentToken.TokenType}");
                 ParseStatement();
-
             }
         }
 
@@ -508,7 +507,7 @@ namespace LANG
                 else if (indexesTable[curIdent].Type != indexesTable[CurrentToken.Lexeme].Type)
                 {
                     form.HighlightError(CurrentToken.LineNumber, CurrentToken.NumberInLine - 1, CurrentToken.Lexeme.Length, Color.Red);
-                    throw new Exception($"Ошибка семантического анализа: несоответствие типов, должно быть here error {indexesTable[curIdent].Type}, {CurrentToken.Lexeme} на строке {CurrentToken.LineNumber}");
+                    throw new Exception($"Ошибка семантического анализа: несоответствие типов, должно быть {indexesTable[curIdent].Type}, {CurrentToken.Lexeme} на строке {CurrentToken.LineNumber}");
                 }
                 ParseVariable();  // Парсим переменную
             }
